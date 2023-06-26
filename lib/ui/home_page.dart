@@ -20,11 +20,11 @@ class _HomePageState extends State<HomePage> {
     if (_search == null) {
       // Fazendo a requisição padrão
       response = await http.get(Uri.parse(
-          "https://tenor.googleapis.com/v2/search?q=excited&key=AIzaSyA41-KeNKvMHkTQ0pu_e8YA1hLmhJzb8NQ&client_key=AppGif&limit=20"));
+          "https://tenor.googleapis.com/v2/search?q=excited&key=AIzaSyA41-KeNKvMHkTQ0pu_e8YA1hLmhJzb8NQ&client_key=AppGif&limit=10&locale=pt-BR&media_filter=gif"));
     } else {
       //Fazendo a requisição com  base na variavel search
       response = await http.get(Uri.parse(
-          "https://tenor.googleapis.com/v2/search?q=$_search&key=AIzaSyA41-KeNKvMHkTQ0pu_e8YA1hLmhJzb8NQ&client_key=AppGif&limit=20"));
+          "https://tenor.googleapis.com/v2/search?q=$_search&key=AIzaSyA41-KeNKvMHkTQ0pu_e8YA1hLmhJzb8NQ&client_key=AppGif&limit=10&locale=pt-BR&media_filter=gif"));
     }
     return json.decode(response.body); //Retornado a resposta da requisição
   }
@@ -56,10 +56,14 @@ class _HomePageState extends State<HomePage> {
             padding: const EdgeInsets.all(10.0),
             child: TextField(
               decoration: InputDecoration(
-                  labelText: "Pesquisar Aqui!",
-                  labelStyle: TextStyle(color: Colors.white),
-                  border: OutlineInputBorder()),
-              style: TextStyle(color: Colors.white, fontSize: 18),
+                labelText: "Pesquisar Aqui!",
+                labelStyle: TextStyle(color: Colors.lightBlue),
+                focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.lightBlue)),
+                enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.lightBlue)),
+              ),
+              style: TextStyle(color: Colors.lightBlue, fontSize: 18),
               textAlign: TextAlign.center,
             ),
           ),
@@ -93,6 +97,22 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _createdGifTable(BuildContext context, AsyncSnapshot snapshot) {
-    return Container();
+    Padding(padding: EdgeInsets.all(10.0));
+    return GridView.builder(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 10.0,
+          mainAxisSpacing: 10.0,
+        ),
+        itemCount: snapshot.data['results'].length,
+        itemBuilder: (context, index) {
+          return GestureDetector(
+            child: Image.network(
+              snapshot.data['results'][index]['media_formats']['gif']['url'],
+              height: 300.0,
+              fit: BoxFit.cover,
+            ),
+          );
+        });
   }
 }
