@@ -7,6 +7,7 @@ void main() {
       debugShowCheckedModeBanner: false,
       title: "AppGif",
       home: HomePage(),
+      theme: ThemeData(hintColor: Colors.white),
     ),
   );
 }
