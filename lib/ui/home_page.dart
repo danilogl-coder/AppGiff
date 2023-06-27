@@ -12,19 +12,19 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  String? _search; // Criei uma variavel de pequisa
+  String? _pos;
   Future<Map> _getGifs() async {
     http.Response response; //Declaramos a resposta
-    String? _search; // Criei uma variavel de pequisa
-    int _offSet = 0;
 
     if (_search == null) {
       // Fazendo a requisição padrão
       response = await http.get(Uri.parse(
-          "https://tenor.googleapis.com/v2/search?q=excited&key=AIzaSyA41-KeNKvMHkTQ0pu_e8YA1hLmhJzb8NQ&client_key=AppGif&limit=10&locale=pt-BR&media_filter=gif"));
+          "https://tenor.googleapis.com/v2/search?q=excited&key=AIzaSyA41-KeNKvMHkTQ0pu_e8YA1hLmhJzb8NQ&client_key=AppGif&limit=19&pos=''&locale=pt-BR&media_filter=gif"));
     } else {
       //Fazendo a requisição com  base na variavel search
       response = await http.get(Uri.parse(
-          "https://tenor.googleapis.com/v2/search?q=$_search&key=AIzaSyA41-KeNKvMHkTQ0pu_e8YA1hLmhJzb8NQ&client_key=AppGif&limit=10&locale=pt-BR&media_filter=gif"));
+          "https://tenor.googleapis.com/v2/search?q=$_search&key=AIzaSyA41-KeNKvMHkTQ0pu_e8YA1hLmhJzb8NQ&client_key=AppGif&limit=19&pos=$_pos&locale=pt-BR&media_filter=gif"));
     }
     return json.decode(response.body); //Retornado a resposta da requisição
   }
@@ -65,12 +65,18 @@ class _HomePageState extends State<HomePage> {
               ),
               style: TextStyle(color: Colors.lightBlue, fontSize: 18),
               textAlign: TextAlign.center,
+              onSubmitted: (text) {
+                setState(() {
+                  _search = text;
+                  _pos = '';
+                });
+              },
             ),
           ),
           Expanded(
               child: FutureBuilder(
                   future: _getGifs(),
-                  builder: (context, snapshot) {
+                  builder: (context, AsyncSnapshot snapshot) {
                     switch (snapshot.connectionState) {
                       case ConnectionState.waiting:
                       case ConnectionState.none:
@@ -96,6 +102,14 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  int _getCount(List data) {
+    if (_search == null) {
+      return data.length;
+    } else {
+      return data.length + 1;
+    }
+  }
+
   Widget _createdGifTable(BuildContext context, AsyncSnapshot snapshot) {
     Padding(padding: EdgeInsets.all(10.0));
     return GridView.builder(
@@ -104,15 +118,39 @@ class _HomePageState extends State<HomePage> {
           crossAxisSpacing: 10.0,
           mainAxisSpacing: 10.0,
         ),
-        itemCount: snapshot.data['results'].length,
+        itemCount: _getCount(snapshot.data['results']),
         itemBuilder: (context, index) {
-          return GestureDetector(
-            child: Image.network(
-              snapshot.data['results'][index]['media_formats']['gif']['url'],
-              height: 300.0,
-              fit: BoxFit.cover,
-            ),
-          );
+          if (_search == null || index < snapshot.data['results'].length) {
+            return GestureDetector(
+              child: Image.network(
+                snapshot.data['results'][index]['media_formats']['gif']['url'],
+                height: 300.0,
+                fit: BoxFit.cover,
+              ),
+            );
+          } else {
+            return Container(
+              child: GestureDetector(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.add,
+                      color: Colors.white,
+                      size: 70.0,
+                    ),
+                    Text("Carregar mais..",
+                        style: TextStyle(color: Colors.white, fontSize: 22.0))
+                  ],
+                ),
+                onTap: () {
+                  setState(() {
+                    _pos = snapshot.data['next'];
+                  });
+                },
+              ),
+            );
+          }
         });
   }
 }
