@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:share_plus/share_plus.dart';
+import 'package:transparent_image/transparent_image.dart';
 
 import 'gif_page.dart';
 
@@ -17,7 +19,7 @@ class _HomePageState extends State<HomePage> {
   Future<Map> _getGifs() async {
     http.Response response; //Declaramos a resposta
 
-    if (_search == null) {
+    if (_search == null || _search!.isEmpty) {
       // Fazendo a requisição padrão
       response = await http.get(Uri.parse(
           "https://tenor.googleapis.com/v2/search?q=excited&key=AIzaSyA41-KeNKvMHkTQ0pu_e8YA1hLmhJzb8NQ&client_key=AppGif&limit=19&pos=''&locale=pt-BR&media_filter=gif"));
@@ -122,11 +124,12 @@ class _HomePageState extends State<HomePage> {
         itemBuilder: (context, index) {
           if (_search == null || index < snapshot.data['results'].length) {
             return GestureDetector(
-              child: Image.network(
-                snapshot.data['results'][index]['media_formats']['gif']['url'],
-                height: 300.0,
-                fit: BoxFit.cover,
-              ),
+              child: FadeInImage.memoryNetwork(
+                  placeholder: kTransparentImage,
+                  image: snapshot.data['results'][index]['media_formats']['gif']
+                      ['url'],
+                  height: 300.0,
+                  fit: BoxFit.cover),
               onTap: () {
                 Navigator.push(
                     context,
@@ -154,6 +157,10 @@ class _HomePageState extends State<HomePage> {
                   setState(() {
                     _pos = snapshot.data['next'];
                   });
+                },
+                onLongPress: () {
+                  Share.share(snapshot.data['results'][index]['media_formats']
+                      ['gif']['url']);
                 },
               ),
             );
